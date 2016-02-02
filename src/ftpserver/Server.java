@@ -21,8 +21,14 @@ public class Server {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		Server server = new Server();
-		server.listenConnexion();
+//		Server server = new Server();
+//		server.listenConnexion();
+		
+		FtpData ftpd = new FtpData();
+		ftpd.start();
+		ftpd.notify();
+		ftpd.test = "loul";
+		ftpd.notify();
 	}
 
 }
