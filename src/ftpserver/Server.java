@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import ftpserver.FtpData.CommandAlreadyAsked;
+
 public class Server {
 	
 	private void listenConnexion() throws IOException {
@@ -24,11 +26,28 @@ public class Server {
 //		Server server = new Server();
 //		server.listenConnexion();
 		
+		//DEMO FTPDATA, tout devrait s'arrêter
 		FtpData ftpd = new FtpData();
 		ftpd.start();
-		ftpd.notify();
-		ftpd.test = "loul";
-		ftpd.notify();
+		try {
+			ftpd.askCommand("quitf");
+		} catch (CommandAlreadyAsked e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try {
+			ftpd.askCommand("quit");
+		} catch (CommandAlreadyAsked e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 
 }
