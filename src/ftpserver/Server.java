@@ -23,31 +23,7 @@ public class Server {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-//		Server server = new Server();
-//		server.listenConnexion();
-		
-		//DEMO FTPDATA, tout devrait s'arrêter
-		FtpData ftpd = new FtpData();
-		ftpd.start();
-		try {
-			ftpd.askCommand("quitf");
-		} catch (CommandAlreadyAsked e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
-			ftpd.askCommand("quit");
-		} catch (CommandAlreadyAsked e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		Server server = new Server();
+		server.listenConnexion();
 	}
-
 }

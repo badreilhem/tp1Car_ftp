@@ -5,7 +5,10 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
+
+import ftpserver.FtpData.CommandAlreadyAsked;
 
 public class FtpRequest extends Thread {
 
@@ -15,7 +18,8 @@ public class FtpRequest extends Thread {
 	private BufferedWriter bw;
 	private FtpFileHandler fh;
 	private String username;
-
+	private FtpData ftpd;
+	
 	public FtpRequest(Socket s) throws IOException {
 		this.s = s;
 		this.br = new BufferedReader(new InputStreamReader(s.getInputStream()));
@@ -30,6 +34,9 @@ public class FtpRequest extends Thread {
 				processRequest(this.br.readLine());
 			} catch (IOException e) {
 				System.err.println("can't read request from socket");
+				e.printStackTrace();
+			} catch (CommandAlreadyAsked e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -48,8 +55,15 @@ public class FtpRequest extends Thread {
 	}
 	private void close() {
 		try {
-			this.br.close();
-			this.s.close();
+			sendMessage("Goodbye");
+			if(br != null)
+				this.br.close();
+			if(bw != null)
+				this.bw.close();
+			if(s != null)
+				this.s.close();
+			if(ftpd != null)
+				this.ftpd.close();
 		} catch (IOException e) {
 			System.err.println("can't close FTPRequest");
 			e.printStackTrace();
@@ -57,7 +71,7 @@ public class FtpRequest extends Thread {
 		System.out.println("FTPRequest successfully closed");
 	}
 
-	private void processRequest(String requete) {
+	private void processRequest(String requete) throws CommandAlreadyAsked {
 		System.out.println("received request : " + requete);
 		
 		switch (requete) {
@@ -89,20 +103,32 @@ public class FtpRequest extends Thread {
 	}
 
 	
-	private void processPASV() {
+	private void processPASV() throws CommandAlreadyAsked {
+		try {
+			ServerSocket sv = new ServerSocket(2122);
+			this.sendMessage("" + sv.getLocalSocketAddress() + sv.getLocalPort());
+			this.ftpd = new FtpData(this.fh, sv);
+			
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+			e.printStackTrace();
+		}
 		
 	}
 
 	private void processPORT(String string) {
-		// TODO Auto-generated method stub
 		
 	}
 
 	private void processUSER(String username) {
 		System.out.println("command USER");
 		this.sendMessage("command USER");
-		this.username = username;
-		this.sendMessage("please enter your password");
+		if(this.fh != null)
+			sendMessage("You already have an active session");
+		else {
+			this.username = username;
+			this.sendMessage("please enter your password");
+		}
 	}
 	
 	private void processPASS(String password) {
@@ -129,7 +155,8 @@ public class FtpRequest extends Thread {
 			sendMessage("You must connect first");
 	}
 	
-	private void processLIST() {
+	private void processLIST() throws CommandAlreadyAsked {
+		this.ftpd.askCommand("LIST");
 		System.out.println("command LIST");
 		this.sendMessage("command LIST");
 		
@@ -147,8 +174,6 @@ public class FtpRequest extends Thread {
 			sendMessage("You must connect first");
 	}
 
-	
-	
 	
 	private void createSession() {
 		try {
