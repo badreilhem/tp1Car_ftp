@@ -12,26 +12,26 @@ public class FtpData extends Thread {
 
 	private Socket s;
 	private ServerSocket sv;
-	private BufferedReader br;
-	private boolean listen;
-	private BufferedWriter bw;
+	private BufferedWriter requestBw;
 	private FtpFileHandler fh;
-	private String username;
 
 	private String command;
 
-	public FtpData(FtpFileHandler fh1, ServerSocket sv) throws IOException {
+	public FtpData(FtpFileHandler fh, ServerSocket sv, BufferedWriter requestBw) throws IOException {
 		this.sv = sv;
 		this.command = null;
-		this.fh = fh1;
+		this.fh = fh;
+		this.s = null;
+		this.requestBw = requestBw;
 	}
-	
-	//test
-	public FtpData() {
-		this.listen = true;
-		this.command = null;		
+
+	public FtpData(FtpFileHandler fh, Socket s, BufferedWriter requestBw) {
+		this.s = s;
+		this.command = null;
+		this.fh = fh;
+		this.requestBw = requestBw;
 	}
-			
+
 	public void run() {
 		System.out.println("start FTPData");
 		waitConnexion();
@@ -42,26 +42,51 @@ public class FtpData extends Thread {
 	}
 
 	private synchronized void waitConnexion() {
+		if(s == null)
 		try {
 			this.s = this.sv.accept();
 		} catch (IOException e) {
 			System.err.println("bug while waiting connexion");
 			this.close();
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	private void processCommand(String command) {
 		// TODO Auto-generated method stub
-		
+
 		System.out.println("process " + command);
-		/*switch (command) {
+
+		// if(command == null)
+		// return;
+
+		switch (command) {
 		case "LIST":
 			processLIST();
 			break;
-		}*/
-//		this.br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-	//	this.setBw(new BufferedWriter(new OutputStreamWriter(s.getOutputStream())));
+		}
+
+		// this.br = new BufferedReader(new
+		// InputStreamReader(s.getInputStream()));
+		// this.setBw(new BufferedWriter(new
+		// OutputStreamWriter(s.getOutputStream())));
+
+	}
+
+	private void processLIST() {
+		if (this.fh != null) {
+			sendMessage(requestBw, ReturnString.fileStatusOk);
+			try {
+				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
+				for (String s : this.fh.list())
+					sendMessage(bw, s);
+				bw.close();
+				sendMessage(requestBw, ReturnString.closingDataConnection);
+			} catch (IOException e) {
+				System.err.println(e.getMessage());
+			}
+		} else
+			sendMessage(requestBw, "You must connect first");
 
 	}
 
@@ -88,8 +113,8 @@ public class FtpData extends Thread {
 	public synchronized boolean commandAsked() {
 		return this.command != null;
 	}
-/*
-	private void sendMessage(String msg) {
+
+	private void sendMessage(BufferedWriter bw, String msg) {
 		try {
 			bw.write(msg);
 			bw.newLine();
@@ -98,36 +123,22 @@ public class FtpData extends Thread {
 			System.err.println("can't send message :" + msg);
 			e1.printStackTrace();
 		}
-	}*/
+	}
 
 	public void close() {
 		try {
-			if(br != null)
-				this.br.close();
-			if(bw != null)
-				this.bw.close();
-			if(sv != null)
+			if (sv != null)
 				this.sv.close();
-			if(s != null)
+			if (s != null)
 				this.s.close();
 		} catch (IOException e) {
-			System.err.println("can't close FTPRequest");
+			System.err.println("can't close FTPData");
 			e.printStackTrace();
 		}
-		System.out.println("FTPRequest successfully closed");
+		System.out.println("FTPData successfully closed");
 	}
 
-	
-	
-	public BufferedWriter getBw() {
-		return bw;
-	}
-
-	public void setBw(BufferedWriter bw) {
-		this.bw = bw;
-	}
-
-	//EXCEPTIONS
+	// EXCEPTIONS
 	public class CommandAlreadyAsked extends Exception {
 
 	}
