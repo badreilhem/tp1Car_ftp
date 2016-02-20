@@ -114,6 +114,15 @@ public class FtpRequest extends Thread {
 			case "pwd":
 				processPWD();
 				break;
+			case "cwd":
+				if (parsedCommand.length == 2)
+					processCWD(parsedCommand[1]);
+				else
+					sendMessage(ReturnString.parameterSyntaxError + " please enter a directory");
+				break;
+			case "cdup":
+				processCDUP();
+				break;
 			case "list":
 				processLIST();
 				break;
@@ -126,6 +135,18 @@ public class FtpRequest extends Thread {
 			default:
 				incorrectCommand(requete);
 			}
+		}
+	}
+
+	private void processCDUP() {
+		this.fh.changeWorkingDirectory("");
+	}
+
+	private void processCWD(String directoryName) {
+		if(directoryName.equals("..")){
+			processCDUP();			
+		}else{
+			
 		}
 	}
 
@@ -186,7 +207,6 @@ public class FtpRequest extends Thread {
 		System.out.println("command QUIT");
 		this.listen = false;
 	}
-
 	private void processPWD() {
 		System.out.println("command PWD");
 		if (this.fh != null)

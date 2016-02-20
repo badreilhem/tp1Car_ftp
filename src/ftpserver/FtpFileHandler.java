@@ -28,4 +28,7 @@ public class FtpFileHandler {
 		return file.list();
 	}
 	
+	public void changeWorkingDirectory(String DirectoryName){
+		this.workingDirectory = Paths.get(this.workingDirectory.toString() + DirectoryName);
+	}
 }
