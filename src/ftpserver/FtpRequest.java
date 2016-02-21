@@ -76,7 +76,7 @@ public class FtpRequest extends Thread {
 		System.out.println("FTPRequest successfully closed");
 	}
 
-	private void processRequest(String requete) throws CommandAlreadyAsked {
+	private void processRequest(String requete) throws CommandAlreadyAsked, IOException {
 		System.out.println("received request : " + requete);
 
 		/*
@@ -138,15 +138,23 @@ public class FtpRequest extends Thread {
 		}
 	}
 
-	private void processCDUP() {
+	private void processCDUP() throws IOException {
 		this.fh.changeWorkingDirectory("");
 	}
 
 	private void processCWD(String directoryName) {
-		if(directoryName.equals("..")){
-			processCDUP();			
-		}else{
-			
+		try{
+			if(directoryName.equals("..")){
+				processCDUP();			
+			}else{
+				if(this.fh.getWorkingDirectory().contains(directoryName)){
+					this.fh.changeWorkingDirectory(directoryName);
+				}else{
+					sendMessage(ReturnString.fileUnavailable);
+				}
+			}
+		}catch(IOException e){
+			sendMessage(ReturnString.fileUnavailable);
 		}
 	}
 
@@ -159,11 +167,13 @@ public class FtpRequest extends Thread {
 				this.ftpd.start();
 
 			} catch (IOException e) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
+				sendMessage(ReturnString.connectionRefused);
+				/*System.err.println(e.getMessage());
+				e.printStackTrace();*/
 			}
 		else
-			sendMessage("please wait before data connexion ends");
+			sendMessage(ReturnString.connectionDenied+
+					"please wait before data connexion ends");
 
 	}
 
@@ -178,11 +188,13 @@ public class FtpRequest extends Thread {
 				this.sendMessage(ReturnString.portSuccessful);
 
 			} catch (IOException e) {
-				System.err.println(e.getMessage());
-				e.printStackTrace();
+				sendMessage(ReturnString.connectionRefused);
+				/*System.err.println(e.getMessage());
+				e.printStackTrace();*/
 			}
 		else
-			sendMessage("please wait before data connexion ends");
+			sendMessage(ReturnString.connectionDenied+
+					"please wait before data connexion ends");
 	}
 
 	private void processUSER(String username) {

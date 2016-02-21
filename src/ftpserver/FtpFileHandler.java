@@ -28,7 +28,18 @@ public class FtpFileHandler {
 		return file.list();
 	}
 	
-	public void changeWorkingDirectory(String DirectoryName){
-		this.workingDirectory = Paths.get(this.workingDirectory.toString() + DirectoryName);
+	public void changeWorkingDirectory(String directoryName) throws IOException{
+		String fileName = this.workingDirectory.toString() + directoryName;
+		if(fileName.equals("ftp/" + this.username))
+			throw new IOException("You don't have the rigths for this directory");
+		else{
+			File file = new File(fileName);
+			if((file.canRead() || file.canWrite()) && file.isDirectory()){
+				this.workingDirectory = Paths.get(fileName);
+			}else{
+				throw new IOException("path " + fileName + " is not a directory or " +
+						"you don't have the rigths for this directory");
+			}
+		}
 	}
 }
