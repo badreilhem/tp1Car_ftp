@@ -1,9 +1,7 @@
 package ftpserver;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -79,7 +77,7 @@ public class FtpData extends Thread {
 			try {
 				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 				for (String s : this.fh.list())
-					sendMessage(bw, s);
+					sendMessage(bw, s+" "+this.fh.getFileRights().get(s));
 				bw.close();
 				sendMessage(requestBw, ReturnString.closingDataConnection);
 			} catch (IOException e) {

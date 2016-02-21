@@ -139,7 +139,7 @@ public class FtpRequest extends Thread {
 	}
 
 	private void processCDUP() throws IOException {
-		this.fh.changeWorkingDirectory("");
+		this.fh.changeWorkingDirectory("..");
 	}
 
 	private void processCWD(String directoryName) {
@@ -147,7 +147,7 @@ public class FtpRequest extends Thread {
 			if(directoryName.equals("..")){
 				processCDUP();			
 			}else{
-				if(this.fh.getWorkingDirectory().contains(directoryName)){
+				if(this.fileInDir(directoryName)){
 					this.fh.changeWorkingDirectory(directoryName);
 				}else{
 					sendMessage(ReturnString.fileUnavailable);
@@ -162,7 +162,7 @@ public class FtpRequest extends Thread {
 		if (this.ftpd == null || !this.ftpd.isAlive())
 			try {
 				ServerSocket sv = new ServerSocket(2122);
-				this.sendMessage("" + sv.getLocalSocketAddress() + sv.getLocalPort());
+				this.sendMessage("(" + sv.getLocalSocketAddress().toString() + sv.getLocalPort() +")");
 				this.ftpd = new FtpData(this.fh, sv, this.bw);
 				this.ftpd.start();
 
@@ -259,5 +259,13 @@ public class FtpRequest extends Thread {
 	public void incorrectCommand(String requete) {
 		System.out.println("can't process request " + requete);
 		sendMessage(ReturnString.syntaxError);
+	}
+	
+	public boolean fileInDir(String fileName) throws IOException{
+		for(String s : this.fh.list()){
+			if(s.equals(fileName))
+				return true;
+		}
+		return false;
 	}
 }
