@@ -1,7 +1,11 @@
 package ftpserver;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -13,7 +17,7 @@ public class FtpData extends Thread {
 	private BufferedWriter requestBw;
 	private FtpFileHandler fh;
 
-	private String command;
+	private String[] command;
 
 	public FtpData(FtpFileHandler fh, ServerSocket sv, BufferedWriter requestBw) throws IOException {
 		this.sv = sv;
@@ -50,17 +54,29 @@ public class FtpData extends Thread {
 		}
 	}
 
-	private void processCommand(String command) {
+	private void processCommand(String[] command) {
 		// TODO Auto-generated method stub
 
-		System.out.println("process " + command);
+		System.out.println("process " + command[0]);
 
 		// if(command == null)
 		// return;
 
-		switch (command) {
-		case "LIST":
+		switch (command[0].toLowerCase()) {
+		case "list":
 			processLIST();
+			break;
+		case "stor":
+			if(command.length == 2)
+				processSTOR();
+			else
+				sendMessage(requestBw, ReturnString.parameterSyntaxError + " in STOR command");
+			break;
+		case "retr":
+			if(command.length == 2)
+				processRETR();
+			else
+				sendMessage(requestBw, ReturnString.parameterSyntaxError + " in RETR command");
 			break;
 		}
 
@@ -76,10 +92,9 @@ public class FtpData extends Thread {
 			sendMessage(requestBw, ReturnString.fileStatusOk);
 			try {
 				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-				for (String s : this.fh.list())
-					sendMessage(bw, s+" "+this.fh.getFileRights().get(s));
+				for (File f : this.fh.list())
+					sendMessage(bw, this.fh.getFileRights(f) + ' ' + f.getName());
 				bw.close();
-				sendMessage(requestBw, ReturnString.closingDataConnection);
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
 			}
@@ -88,11 +103,49 @@ public class FtpData extends Thread {
 
 	}
 
-	public synchronized void askCommand(String str) throws CommandAlreadyAsked {
-		System.out.println("asked command " + str);
+	private void processSTOR() {
+		if (this.fh != null) {
+			sendMessage(requestBw, ReturnString.fileStatusOk);
+			try {
+				File dest = new File(fh.getWorkingDirectory() + '/' + command[1] );
+				if(!dest.exists())
+					dest.createNewFile();
+				InputStream dataStream = s.getInputStream();
+				fh.writeFile(dest, dataStream);
+			} catch (FileNotFoundException e) {
+				sendMessage(requestBw, ReturnString.fileUnavailable);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else
+			sendMessage(requestBw, "You must connect first");
+
+	}
+
+	private void processRETR() {
+		if (this.fh != null) {
+			sendMessage(requestBw, ReturnString.fileStatusOk);
+			try {
+				File src = new File(fh.getWorkingDirectory() + '/' + command[1]);
+				OutputStream targetStream = s.getOutputStream();
+				fh.readFile(src, targetStream);
+			} catch (FileNotFoundException e) {
+				sendMessage(requestBw, ReturnString.fileUnavailable);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else
+			sendMessage(requestBw, "You must connect first");
+
+	}
+
+	public synchronized void askCommand(String[] command) throws CommandAlreadyAsked {
+		System.out.println("asked command " + command[0]);
 		if (this.command != null)
 			throw new CommandAlreadyAsked();
-		this.command = str;
+		this.command = command;
 		this.notify();
 	}
 
@@ -125,6 +178,7 @@ public class FtpData extends Thread {
 
 	public void close() {
 		try {
+			sendMessage(requestBw, ReturnString.closingDataConnection);
 			if (sv != null)
 				this.sv.close();
 			if (s != null)

@@ -12,7 +12,7 @@ public class ReturnString {
 	public static final String dirStatus = "212 	";
 	public static final String fileStatus = "213 	";
 	public static final String helpMsg = "214 	";
-	public static final String nameSystType = "215 	UNIX Type: L8";
+	public static final String nameSystType = "215 	UNIX Type: I";
 	public static final String serviceReady = "220 	Service ready for new user.";
 	public static final String goodBye = "221 	Goodbye.";
 	public static final String dataConnectionOpen = "225 	Data connection open; no transfer in progress.";

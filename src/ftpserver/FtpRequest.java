@@ -61,14 +61,14 @@ public class FtpRequest extends Thread {
 	private void close() {
 		try {
 			sendMessage(ReturnString.goodBye);
+			if (ftpd != null)
+				this.ftpd.close();
 			if (br != null)
 				this.br.close();
 			if (bw != null)
 				this.bw.close();
 			if (s != null)
 				this.s.close();
-			if (ftpd != null)
-				this.ftpd.close();
 		} catch (IOException e) {
 			System.err.println("can't close FTPRequest");
 			e.printStackTrace();
@@ -124,7 +124,13 @@ public class FtpRequest extends Thread {
 				processCDUP();
 				break;
 			case "list":
-				processLIST();
+				processLIST(parsedCommand);
+				break;
+			case "stor":
+				processSTOR(parsedCommand);
+				break;
+			case "retr":
+				processRETR(parsedCommand);
 				break;
 			case "syst":
 				processSYST();
@@ -147,7 +153,7 @@ public class FtpRequest extends Thread {
 			if(directoryName.equals("..")){
 				processCDUP();			
 			}else{
-				if(this.fileInDir(directoryName)){
+				if(this.fh.fileInDir(directoryName)){
 					this.fh.changeWorkingDirectory(directoryName);
 				}else{
 					sendMessage(ReturnString.fileUnavailable);
@@ -227,10 +233,27 @@ public class FtpRequest extends Thread {
 			sendMessage("You must connect first");
 	}
 
-	private void processLIST() throws CommandAlreadyAsked {
+	private void processLIST(String[] parsedCommand) throws CommandAlreadyAsked {
 		System.out.println("command LIST");
 		if (ftpd != null)
-			this.ftpd.askCommand("LIST");
+			this.ftpd.askCommand(parsedCommand);
+		else
+			sendMessage("please connect before");
+	}
+
+	private void processRETR(String[] parsedCommand) throws CommandAlreadyAsked {
+		System.out.println("command RETR");
+		if (ftpd != null)
+			this.ftpd.askCommand(parsedCommand);
+		else
+			sendMessage("please connect before");
+		
+	}
+
+	private void processSTOR(String[] parsedCommand) throws CommandAlreadyAsked {
+		System.out.println("command STOR");
+		if (ftpd != null)
+			this.ftpd.askCommand(parsedCommand);
 		else
 			sendMessage("please connect before");
 	}
@@ -261,11 +284,4 @@ public class FtpRequest extends Thread {
 		sendMessage(ReturnString.syntaxError);
 	}
 	
-	public boolean fileInDir(String fileName) throws IOException{
-		for(String s : this.fh.list()){
-			if(s.equals(fileName))
-				return true;
-		}
-		return false;
-	}
 }
