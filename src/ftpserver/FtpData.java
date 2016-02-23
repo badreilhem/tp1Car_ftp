@@ -125,8 +125,9 @@ public class FtpData extends Thread {
 	private void processRETR() {
 		if (this.fh != null) {
 			try {
-				sendMessage(requestBw, ReturnString.fileStatusOk);
 				File src = new File(fh.getWorkingDirectory() + '/' + command[1]);
+				if(src.exists())
+					sendMessage(requestBw, ReturnString.fileStatusOk);
 				OutputStream targetStream = s.getOutputStream();
 				fh.readFile(src, targetStream);
 				sendMessage(requestBw, ReturnString.closingDataConnection);

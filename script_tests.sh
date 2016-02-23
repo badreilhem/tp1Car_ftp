@@ -61,3 +61,6 @@ END_SCRIPT_PASV
 
 cat testGet 
 cat ftp/anonymous/testPut
+
+rm testGet 
+rm ftp/anonymous/testPut
