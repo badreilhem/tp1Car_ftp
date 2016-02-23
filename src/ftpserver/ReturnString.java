@@ -1,11 +1,17 @@
 package ftpserver;
 
+
+/**
+ * Cette classe contient la plupart des codes retournés par le serveur
+ * @author badreddine et cojez
+ *
+ */
 public class ReturnString {
 	public static final String restartMarkerReply = "110 	Restart marker reply";
 	public static final String serviceReadyIn = "120 	Service Ready in ";
 	public static final String dataConnectionAlreadyOpen = "125 	Data Connection already open; transfer starting.";
 	public static final String fileStatusOk = "150 	File status okay; about to open data connection.";
-	public static final String commandOk = "200 	";
+	public static final String commandOk = "200 	Command OK";
 	public static final String portSuccessful = "200 	Port command successful";
 	public static final String commandSuperfluousNotImpl = "202 	Command not implemented, superfluous at this site.";
 	public static final String systemStatus = "211 	";
@@ -17,7 +23,7 @@ public class ReturnString {
 	public static final String goodBye = "221 	Goodbye.";
 	public static final String dataConnectionOpen = "225 	Data connection open; no transfer in progress.";
 	public static final String closingDataConnection = "226 	Closing data connection.";
-	public static final String enteringPassiveMode = "227 	Entering Passive Mode.";
+	public static final String enteringPassiveMode = "227 Entering Passive Mode";
 	public static final String userLogged = "230 	User logged in, proceed.";
 	public static final String fileActionComplete = "250 	Requested file action okay, completed.";
 	public static final String folderCreated = "257 	";
@@ -40,6 +46,7 @@ public class ReturnString {
 	public static final String badSequenceOfCommands = "503 	Bad sequence of commands.";
 	public static final String commandNotImplForParam = "504 	Command not implemented for that parameter.";
 	public static final String userNotLogged = "530 	User not logged in.";
+	public static final String userAlreadyLogged = "531 	User already logged in.";
 	public static final String needAccountForStoring = "532 	Need account for storing files.";
 	public static final String fileUnavailable = "550 	Requested action not taken. File unavailable, not found, not accessible ";
 	public static final String exceededStorageAllocation = "552 	Requested file action aborted. Exceeded storage allocation.";

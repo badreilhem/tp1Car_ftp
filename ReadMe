@@ -1,0 +1,25 @@
+Ilhem Badreddine
+Arnaud Cojez
+Groupe 5, M1 Informatique
+
+TP1-Serveur FTP
+
+Les commandes demandées ont été implémentées.
+Nous recevons des avertissements de la part du logiciel "ftp", mais nous ne pensons pas que cela vienne de notre code.
+
+Pour tester :
+./script_tests.sh
+
+Le test effectue ces opération pour le mode actif (PORT) et passif (PASV)
+- se connecte
+- affiche le contenu du répertoire courant
+- tente d'aller vers le répertoire parent mais échoue
+- va dans le répertoire hi
+- retourne dans le répertoire parent
+- tente de récupérer un fichier inexistant, échoue mais ne plante pas
+- récupère un fichier existant
+- tente d'envoyer un fichier inexistant, échoue mais ne plante pas
+- envoie un fichier existant
+- affiche le contenu du répertoire courant (on trouve désormais testPut dans ce dossier)
+
++ on trouve le fichier testGet dans le répertoire du script de tests

@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import ftpserver.FtpData.CommandAlreadyAsked;
-
+/**
+ * Cette classe (la principale) permet de créer des sessions ftp
+ * @author badreddine et cojez
+ *
+ */
 public class Server {
 	
 	private void listenConnexion() throws IOException {
@@ -18,10 +21,6 @@ public class Server {
 		}
 	}
 
-	/**
-	 * @param args
-	 * @throws IOException 
-	 */
 	public static void main(String[] args) throws IOException {
 		Server server = new Server();
 		server.listenConnexion();

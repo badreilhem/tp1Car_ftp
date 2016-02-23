@@ -10,6 +10,11 @@ import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Cette classe permet au serveur d'envoyer des données sans bloquer la gestion des commandes
+ * @author badreddine et cojez
+ *
+ */
 public class FtpData extends Thread {
 
 	private Socket s;
@@ -18,6 +23,7 @@ public class FtpData extends Thread {
 	private FtpFileHandler fh;
 
 	private String[] command;
+	private boolean closed;
 
 	public FtpData(FtpFileHandler fh, ServerSocket sv, BufferedWriter requestBw) throws IOException {
 		this.sv = sv;
@@ -25,6 +31,7 @@ public class FtpData extends Thread {
 		this.fh = fh;
 		this.s = null;
 		this.requestBw = requestBw;
+		this.closed = false;
 	}
 
 	public FtpData(FtpFileHandler fh, Socket s, BufferedWriter requestBw) {
@@ -32,6 +39,7 @@ public class FtpData extends Thread {
 		this.command = null;
 		this.fh = fh;
 		this.requestBw = requestBw;
+		this.closed = false;
 	}
 
 	public void run() {
@@ -55,12 +63,7 @@ public class FtpData extends Thread {
 	}
 
 	private void processCommand(String[] command) {
-		// TODO Auto-generated method stub
-
 		System.out.println("process " + command[0]);
-
-		// if(command == null)
-		// return;
 
 		switch (command[0].toLowerCase()) {
 		case "list":
@@ -80,11 +83,6 @@ public class FtpData extends Thread {
 			break;
 		}
 
-		// this.br = new BufferedReader(new
-		// InputStreamReader(s.getInputStream()));
-		// this.setBw(new BufferedWriter(new
-		// OutputStreamWriter(s.getOutputStream())));
-
 	}
 
 	private void processLIST() {
@@ -94,6 +92,7 @@ public class FtpData extends Thread {
 				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 				for (File f : this.fh.list())
 					sendMessage(bw, this.fh.getFileRights(f) + ' ' + f.getName());
+				sendMessage(requestBw, ReturnString.closingDataConnection);
 				bw.close();
 			} catch (IOException e) {
 				System.err.println(e.getMessage());
@@ -105,18 +104,18 @@ public class FtpData extends Thread {
 
 	private void processSTOR() {
 		if (this.fh != null) {
-			sendMessage(requestBw, ReturnString.fileStatusOk);
 			try {
+				sendMessage(requestBw, ReturnString.fileStatusOk);
 				File dest = new File(fh.getWorkingDirectory() + '/' + command[1] );
 				if(!dest.exists())
 					dest.createNewFile();
 				InputStream dataStream = s.getInputStream();
 				fh.writeFile(dest, dataStream);
+				sendMessage(requestBw, ReturnString.closingDataConnection);
 			} catch (FileNotFoundException e) {
 				sendMessage(requestBw, ReturnString.fileUnavailable);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error while opening file ");
 			}
 		} else
 			sendMessage(requestBw, "You must connect first");
@@ -125,16 +124,16 @@ public class FtpData extends Thread {
 
 	private void processRETR() {
 		if (this.fh != null) {
-			sendMessage(requestBw, ReturnString.fileStatusOk);
 			try {
+				sendMessage(requestBw, ReturnString.fileStatusOk);
 				File src = new File(fh.getWorkingDirectory() + '/' + command[1]);
 				OutputStream targetStream = s.getOutputStream();
 				fh.readFile(src, targetStream);
+				sendMessage(requestBw, ReturnString.closingDataConnection);
 			} catch (FileNotFoundException e) {
 				sendMessage(requestBw, ReturnString.fileUnavailable);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error while opening file ");
 			}
 		} else
 			sendMessage(requestBw, "You must connect first");
@@ -177,21 +176,27 @@ public class FtpData extends Thread {
 	}
 
 	public void close() {
+		this.closed = true;
 		try {
-			sendMessage(requestBw, ReturnString.closingDataConnection);
-			if (sv != null)
-				this.sv.close();
 			if (s != null)
 				this.s.close();
+			if (sv != null)
+				this.sv.close();
 		} catch (IOException e) {
 			System.err.println("can't close FTPData");
 			e.printStackTrace();
 		}
 		System.out.println("FTPData successfully closed");
 	}
+	
+	public boolean isClosed() {
+		return this.closed;
+	}
 
 	// EXCEPTIONS
 	public class CommandAlreadyAsked extends Exception {
+
+		private static final long serialVersionUID = -7581484883396476122L;
 
 	}
 }

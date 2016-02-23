@@ -11,6 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Cette classe permet de gérer le système de fichiers
+ * @author badreddine et cojez
+ *
+ */
 public class FtpFileHandler {
 
 	private String username;
@@ -91,12 +96,8 @@ public class FtpFileHandler {
 
 				targetStream.close();
 
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error while reading file " + file.getName());
 			}
 		else
 			throw new FileNotFoundException();
@@ -114,12 +115,8 @@ public class FtpFileHandler {
 
 				dataStream.close();
 
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error while reading file " + file.getName());
 			}
 		else
 			throw new FileNotFoundException();
@@ -127,7 +124,7 @@ public class FtpFileHandler {
 	
 	public boolean fileInDir(String fileName) throws IOException{
 		for(File f : this.list()){
-			if(f.equals(fileName))
+			if(f.getName().equals(fileName))
 				return true;
 		}
 		return false;
